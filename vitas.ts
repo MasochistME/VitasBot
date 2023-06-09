@@ -1,5 +1,8 @@
-import '@babel/polyfill';
-import Discord from 'discord.js';
+import {
+    Client,
+    GatewayIntentBits,
+	Partials,
+} from 'discord.js';
 import { log } from './log';
 import { classifyMessage } from './lib/message';
 import { mongo } from './lib/mongo';
@@ -9,7 +12,12 @@ import config from './config.json';
 
 let isReady = false;
 
-const bot = new Discord.Client();
+const bot = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+    allowedMentions: {parse: []}
+});
+
 const ready = async () => {
     log.INFO('Awaiting the start of the bot...');
     await mongo.init();
@@ -26,6 +34,7 @@ const start = async () => {
     isReady = true;
     log.INFO(`${new Date().toLocaleString()} - Vitas starts working!`);
 }
+
 bot.on('ready', ready);
 bot.on('message', msg => classifyMessage(msg, isReady));
 bot.login(config.DISCORD_TOKEN);
